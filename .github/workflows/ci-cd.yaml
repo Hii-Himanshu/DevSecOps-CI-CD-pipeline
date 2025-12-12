@@ -161,17 +161,23 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
+
+      - name: Convert repo name to lowercase
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: echo "GITHUB_REPOSITORY_LOWER=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+    
       
       - name: Update Kubernetes deployment file
         env:
           IMAGE_TAG: sha-${{ github.sha }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REPOSITORY_LOWER: ${{ env.GITHUB_REPOSITORY_LOWER }}
           REGISTRY: ghcr.io
         run: |
 
           
           # Define the new image with tag
-          NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
+          NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY_LOWER}:${IMAGE_TAG}"
           
           # Update the deployment file directly
           sed -i "s|image: ${REGISTRY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
